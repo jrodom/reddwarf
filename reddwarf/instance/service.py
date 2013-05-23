@@ -24,8 +24,10 @@ from reddwarf.common import utils
 from reddwarf.common import wsgi
 from reddwarf.extensions.mysql.common import populate_databases
 from reddwarf.extensions.mysql.common import populate_users
+from reddwarf.common.exception import ModelNotFoundError
 from reddwarf.instance import models, views
 from reddwarf.backup.models import Backup as backup_model
+from reddwarf.configuration.models import Configuration
 from reddwarf.backup import views as backup_views
 from reddwarf.openstack.common import log as logging
 from reddwarf.openstack.common.gettextutils import _
@@ -190,6 +192,28 @@ class InstanceController(wsgi.Controller):
         name = body['instance']['name']
         flavor_ref = body['instance']['flavorRef']
         flavor_id = utils.get_id_from_href(flavor_ref)
+
+        if 'configurationRef' in body['instance']:
+            configurationRef = body['instance']['configurationRef']
+            configuration_id = utils.get_id_from_href(configurationRef)
+
+            # ensure a valid configuration has been passed in and that it
+            # belongs to the user requesting it.
+            try:
+                configuration = Configuration.load(context, configuration_id)
+            except ModelNotFoundError:
+                raise exception.NotFound(
+                    message='Configuration group {0} could not be found'
+                    .format(configuration_id))
+
+            if configuration.tenant_id != tenant_id:
+                raise exception.NotFound(
+                    message='Configuration group {0} could not be found'
+                    .format(configuration_id))
+
+        else:
+            configuration_id = None
+
         databases = populate_databases(body['instance'].get('databases', []))
         users = None
         try:
@@ -214,10 +238,18 @@ class InstanceController(wsgi.Controller):
         instance = models.Instance.create(context, name, flavor_id,
                                           image_id, databases, users,
                                           service_type, volume_size,
-                                          backup_id)
+                                          backup_id, configuration_id)
 
         view = views.InstanceDetailView(instance, req=req)
         return wsgi.Result(view.data(), 200)
+
+    def update(self, req, id, body, tenant_id):
+        ## TODO(jodom): add support for updating config grp.
+        LOG.info(_("Updating instance for tenant id %s" % tenant_id))
+        LOG.info(_("req: %s" % req))
+        LOG.info(_("body: %s" % body))
+
+        return wsgi.Result(None, 202)
 
     @staticmethod
     def _validate_body_not_empty(body):

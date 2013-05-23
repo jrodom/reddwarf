@@ -641,7 +641,7 @@ class MySqlAppInstallTest(MySqlAppTest):
         self.mysql_starts_successfully()
         sqlalchemy.create_engine = Mock()
 
-        self.mySqlApp.secure(100)
+        self.mySqlApp.secure(100, None)
 
         self.assertTrue(self.mySqlApp.stop_db.called)
         self.assertTrue(self.mySqlApp._write_mycnf.called)
@@ -674,7 +674,7 @@ class MySqlAppInstallTest(MySqlAppTest):
         sqlalchemy.create_engine = Mock()
 
         self.assertRaises(pkg.PkgPackageStateError,
-                          self.mySqlApp.secure, 100)
+                          self.mySqlApp.secure, 100, None)
 
         self.assertTrue(self.mySqlApp.stop_db.called)
         self.assertTrue(self.mySqlApp._write_mycnf.called)
@@ -769,7 +769,7 @@ class MySqlAppMockTest(testtools.TestCase):
             any(), any(), any()).thenReturn(True)
         app = MySqlApp(mock_status)
 
-        self.assertRaises(pkg.PkgPackageStateError, app.secure, 2048)
+        self.assertRaises(pkg.PkgPackageStateError, app.secure, 2048, None)
 
         verify(mock_conn, atleast=2).execute(any())
         inorder.verify(mock_status).wait_for_real_status_to_change_to(
@@ -795,7 +795,7 @@ class MySqlAppMockTest(testtools.TestCase):
             any(), any(), any()).thenReturn(True)
         app = MySqlApp(mock_status)
 
-        app.secure(2048)
+        app.secure(2048, None)
         verify(mock_conn, never).execute(TextClauseMatcher('root'))
 
 

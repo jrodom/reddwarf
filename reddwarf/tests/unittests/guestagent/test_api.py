@@ -218,12 +218,13 @@ class ApiTest(testtools.TestCase):
         when(rpc).create_connection(new=True).thenReturn(mock_conn)
         when(mock_conn).create_consumer(any(), any(), any()).thenReturn(None)
         exp_msg = RpcMsgMatcher('prepare', 'memory_mb', 'databases', 'users',
-                                'device_path', 'mount_point', 'backup_id')
+                                'device_path', 'mount_point', 'backup_id',
+                                'overrides')
 
         when(rpc).cast(any(), any(), exp_msg).thenReturn(None)
 
         self.api.prepare('2048', 'db1', 'user1', '/dev/vdt', '/mnt/opt',
-                         'bkup-1232')
+                         'bkup-1232', 'override')
 
         self._verify_rpc_connection_and_cast(rpc, mock_conn, exp_msg)
 
@@ -232,11 +233,12 @@ class ApiTest(testtools.TestCase):
         when(rpc).create_connection(new=True).thenReturn(mock_conn)
         when(mock_conn).create_consumer(any(), any(), any()).thenReturn(None)
         exp_msg = RpcMsgMatcher('prepare', 'memory_mb', 'databases', 'users',
-                                'device_path', 'mount_point', 'backup_id')
+                                'device_path', 'mount_point', 'backup_id',
+                                'overrides')
         when(rpc).cast(any(), any(), exp_msg).thenReturn(None)
 
         self.api.prepare('2048', 'db1', 'user1', '/dev/vdt', '/mnt/opt',
-                         'backup_id_123')
+                         'backup_id_123', 'overrides')
 
         self._verify_rpc_connection_and_cast(rpc, mock_conn, exp_msg)
 

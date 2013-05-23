@@ -28,6 +28,7 @@ from reddwarf.common.remote import create_nova_volume_client
 from reddwarf.extensions.security_group.models import SecurityGroup
 from reddwarf.db import models as dbmodels
 from reddwarf.backup.models import Backup
+from reddwarf.configuration.models import Configuration
 from reddwarf.quota.quota import run_with_quotas
 from reddwarf.instance.tasks import InstanceTask
 from reddwarf.instance.tasks import InstanceTasks
@@ -217,6 +218,14 @@ class SimpleInstance(object):
     @property
     def volume_size(self):
         return self.db_info.volume_size
+
+    @property
+    def configuration(self):
+        if self.db_info.configuration_id is not None:
+            return Configuration.load(self.context,
+                                      self.db_info.configuration_id)
+        else:
+            return None
 
 
 class DetailInstance(SimpleInstance):
@@ -413,7 +422,8 @@ class Instance(BuiltInstance):
 
     @classmethod
     def create(cls, context, name, flavor_id, image_id,
-               databases, users, service_type, volume_size, backup_id):
+               databases, users, service_type, volume_size, backup_id,
+               configuration_id):
 
         def _create_resources():
             client = create_nova_client(context)
@@ -436,9 +446,22 @@ class Instance(BuiltInstance):
             db_info = DBInstance.create(name=name, flavor_id=flavor_id,
                                         tenant_id=context.tenant,
                                         volume_size=volume_size,
-                                        task_status=InstanceTasks.BUILDING)
+                                        task_status=InstanceTasks.BUILDING,
+                                        configuration_id=configuration_id)
             LOG.debug(_("Tenant %s created new Reddwarf instance %s...")
                       % (context.tenant, db_info.id))
+
+            # if a configuration group is associated with this instance,
+            # generate an overrides dict to pass into the instance creation
+            # method
+
+            overrides = {}
+            if configuration_id:
+                configuration = Configuration.load(context,
+                                                   id=configuration_id)
+
+                for i in configuration.items:
+                    overrides[i.configuration_key] = i.configuration_value
 
             service_status = InstanceServiceStatus.create(
                 instance_id=db_info.id,
@@ -460,7 +483,8 @@ class Instance(BuiltInstance):
                                                   flavor.ram, image_id,
                                                   databases, users,
                                                   service_type, volume_size,
-                                                  security_groups, backup_id)
+                                                  security_groups, backup_id,
+                                                  overrides)
 
             return SimpleInstance(context, db_info, service_status)
 

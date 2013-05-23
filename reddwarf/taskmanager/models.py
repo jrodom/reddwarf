@@ -108,7 +108,7 @@ class FreshInstanceTasks(FreshInstance, NotifyMixin):
 
     def create_instance(self, flavor_id, flavor_ram, image_id,
                         databases, users, service_type, volume_size,
-                        security_groups, backup_id):
+                        security_groups, backup_id, overrides):
         if use_nova_server_volume:
             server, volume_info = self._create_server_volume(
                 flavor_id,
@@ -132,7 +132,7 @@ class FreshInstanceTasks(FreshInstance, NotifyMixin):
 
         if server:
             self._guest_prepare(server, flavor_ram, volume_info,
-                                databases, users, backup_id)
+                                databases, users, backup_id, overrides)
 
         if not self.db_info.task_status.is_error:
             self.update_db(task_status=inst_models.InstanceTasks.NONE)
@@ -323,13 +323,13 @@ class FreshInstanceTasks(FreshInstance, NotifyMixin):
         return server
 
     def _guest_prepare(self, server, flavor_ram, volume_info,
-                       databases, users, backup_id=None):
+                       databases, users, backup_id=None, overrides=None):
         LOG.info("Entering guest_prepare.")
         # Now wait for the response from the create to do additional work
         self.guest.prepare(flavor_ram, databases, users,
                            device_path=volume_info['device_path'],
                            mount_point=volume_info['mount_point'],
-                           backup_id=backup_id)
+                           backup_id=backup_id, overrides=overrides)
 
     def _create_dns_entry(self):
         LOG.debug("%s: Creating dns entry for instance: %s" %

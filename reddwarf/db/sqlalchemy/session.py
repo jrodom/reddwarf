@@ -48,6 +48,7 @@ def configure_db(options, models_mapper=None):
         from reddwarf.quota import models as quota_models
         from reddwarf.backup import models as backup_models
         from reddwarf.extensions.security_group import models as secgrp_models
+        from reddwarf.configuration import models as configurations_models
 
         model_modules = [
             base_models,
@@ -57,6 +58,7 @@ def configure_db(options, models_mapper=None):
             quota_models,
             backup_models,
             secgrp_models,
+            configurations_models,
         ]
 
         models = {}

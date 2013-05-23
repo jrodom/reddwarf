@@ -71,7 +71,7 @@ class Manager(periodic_task.PeriodicTasks):
         LOG.info(_("Restored database"))
 
     def prepare(self, context, databases, memory_mb, users, device_path=None,
-                mount_point=None, backup_id=None):
+                mount_point=None, backup_id=None, overrides=None):
         """Makes ready DBAAS on a Guest container."""
         MySqlAppStatus.get().begin_mysql_install()
         # status end_mysql_install set with secure()
@@ -98,7 +98,7 @@ class Manager(periodic_task.PeriodicTasks):
         if backup_id:
             self._perform_restore(backup_id, context, CONF.mount_point)
         LOG.info(_("Securing mysql now."))
-        app.secure(memory_mb)
+        app.secure(memory_mb, overrides)
         if backup_id and MySqlAdmin().is_root_enabled():
             MySqlAdmin().report_root_enabled(context)
         else:

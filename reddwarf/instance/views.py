@@ -86,6 +86,10 @@ class InstanceDetailView(InstanceView):
         result['instance']['created'] = self.instance.created
         result['instance']['updated'] = self.instance.updated
 
+        if self.instance.configuration is not None:
+            result['instance']['configuration'] = self.\
+                _build_configuration_info()
+
         dns_support = CONF.reddwarf_dns_support
         if dns_support:
             result['instance']['hostname'] = self.instance.hostname
@@ -100,6 +104,14 @@ class InstanceDetailView(InstanceView):
                 used = self._to_gb(self.instance.volume_used)
                 result['instance']['volume']['used'] = used
         return result
+
+    def _build_configuration_info(self):
+        return {
+            "id": self.instance.configuration.id,
+            "name": self.instance.configuration.name,
+            "links": create_links("configurations", self.req,
+                                  self.instance.configuration.id)
+        }
 
 
 class InstancesView(object):

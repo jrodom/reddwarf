@@ -144,6 +144,8 @@ common_opts = [
                help="Chunk size to stream to swift container."),
     cfg.IntOpt('backup_segment_max_size', default=2 * (1024 ** 3),
                help="Maximum size of each segment of the backup file."),
+    cfg.StrOpt('validation_rules',
+               default="/etc/reddwarf/validation-rules.json"),
 ]
 
 

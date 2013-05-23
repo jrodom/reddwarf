@@ -81,6 +81,7 @@ CUSTOM_SERIALIZER_METADATA = {
         #mgmt/instance
         'id': '',
     },
+    'configuration': {'id': '', 'name': '', 'description': ''},
     'flavor': {'id': '', 'ram': '', 'name': ''},
     'link': {'href': '', 'rel': ''},
     'database': {'name': ''},

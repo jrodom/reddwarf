@@ -68,9 +68,9 @@ class Manager(periodic_task.PeriodicTasks):
 
     def create_instance(self, context, instance_id, name, flavor_id,
                         flavor_ram, image_id, databases, users, service_type,
-                        volume_size, security_groups, backup_id):
+                        volume_size, security_groups, backup_id, overrides):
         instance_tasks = FreshInstanceTasks.load(context, instance_id)
         instance_tasks.create_instance(flavor_id, flavor_ram, image_id,
                                        databases, users, service_type,
                                        volume_size, security_groups,
-                                       backup_id)
+                                       backup_id, overrides)
