@@ -18,6 +18,7 @@ from reddwarf.common import wsgi
 from reddwarf.flavor.service import FlavorController
 from reddwarf.instance.service import InstanceController
 from reddwarf.configuration.service import ConfigurationsController
+from reddwarf.configuration.service import ParametersController
 from reddwarf.limits.service import LimitsController
 from reddwarf.backup.service import BackupController
 from reddwarf.versions import VersionsController
@@ -62,10 +63,15 @@ class API(wsgi.Router):
                         member={'action': 'POST'})
 
     def _configurations_router(self, mapper):
-        configuration_controller = ConfigurationsController().create_resource()
+        configuration_resource = ConfigurationsController().create_resource()
         path = "/{tenant_id}/configurations"
         mapper.resource("configuration", path,
-                        controller=configuration_controller)
+                        controller=configuration_resource)
+
+        parameters_resource = ParametersController().create_resource()
+        parametersPath = "/{tenant_id}/configuration-parameters"
+        mapper.resource("parameters", parametersPath,
+                        controller=parameters_resource)
 
 
 def app_factory(global_conf, **local_conf):

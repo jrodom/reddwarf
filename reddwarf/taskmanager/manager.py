@@ -74,3 +74,7 @@ class Manager(periodic_task.PeriodicTasks):
                                        databases, users, service_type,
                                        volume_size, security_groups,
                                        backup_id, overrides)
+
+    def update_overrides(self, context, instance_id, overrides):
+        instance_tasks = models.BuiltInstanceTasks.load(context, instance_id)
+        instance_tasks.update_overrides(overrides)

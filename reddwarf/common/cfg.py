@@ -17,6 +17,10 @@
 """Routines for configuring Reddwarf."""
 
 from oslo.config import cfg
+import json
+from reddwarf.openstack.common import log as logging
+
+LOG = logging.getLogger(__name__)
 
 common_opts = [
     cfg.StrOpt('sql_connection',
@@ -144,13 +148,27 @@ common_opts = [
                help="Chunk size to stream to swift container."),
     cfg.IntOpt('backup_segment_max_size', default=2 * (1024 ** 3),
                help="Maximum size of each segment of the backup file."),
-    cfg.StrOpt('validation_rules',
+    cfg.StrOpt('validation_rule_file',
                default="/etc/reddwarf/validation-rules.json"),
 ]
 
 
 CONF = cfg.CONF
 CONF.register_opts(common_opts)
+
+cfg.validation_rules = dict()
+
+
+def get_validation_rules():
+
+    if not cfg.validation_rules:
+        validation_config = open(CONF.validation_rule_file)
+        rules = json.load(validation_config)
+        validation_config.close()
+
+        cfg.validation_rules = rules
+
+    return cfg.validation_rules
 
 
 def custom_parser(parsername, parser):
